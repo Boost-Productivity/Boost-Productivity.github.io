@@ -1,2 +1,80 @@
-Boost.
-Coming Soon
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=helvetica">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .flex-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+        }
+
+        .flex-container>h1 {
+            background-color: white;
+            font-family: 'helvetica';
+            font-weight: bold;
+            font-size: 40px;
+            letter-spacing: -4px;
+        }
+
+        .flex-container>div {
+            background-color: white;
+            font-family: 'helvetica';
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        #coming-soon {
+            margin-bottom: 10px;
+        }
+
+        #contact {
+            font-size: 12px;
+        }
+
+        /* unvisited link */
+        a:link {
+            color: black;
+            text-decoration: none;
+        }
+
+        /* visited link */
+        a:visited {
+            color: black;
+            text-decoration: none;
+        }
+
+        /* mouse over link */
+        a:hover {
+            color: gray;
+            text-decoration: none;
+        }
+
+        /* selected link */
+        a:active {
+            color: gray;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="flex-container">
+        <h1>Boost.</h1>
+        <div id="coming-soon">Coming Soon</div>
+        <div id="contact"><a href="mailto:jake@boostproductivity.co">Contact</a></div>
+    </div>
+
+</body>
+
+</html>

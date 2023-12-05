@@ -5,6 +5,8 @@ window.onload = function() {
     const state = queryParams.get('state');
 
     // TODO: Validate the state parameter here to ensure it matches what you sent
+    console.log("code:")
+    console.log(code)
 
     if (code) {
         // Call the AWS Lambda function to handle the exchange of the code for tokens

@@ -32,6 +32,7 @@
             justify-content: center;
             align-items: center;
             background-color: white;
+            padding: 20px;
         }
 
         .flex-container>h1 {
@@ -39,8 +40,10 @@
             font-family: 'helvetica';
             font-weight: bold;
             font-size: 60px;
-            letter-spacing: -6px;
+            letter-spacing: -5px;
             margin: 0px;
+            text-align: center;
+            line-height: 1.1;
         }
 
         .flex-container>div {
@@ -57,6 +60,7 @@
         #coming-soon {
             margin-bottom: 10px;
             font-size: 13px;
+            text-align: center;
         }
 
         #icons-row {
@@ -64,42 +68,98 @@
             font-size: 13px;
         }
 
-        #google-form {
-            margin-bottom: 25px;
-            font-size: 16px;
-            font-weight: normal;
+        #focus-timer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
         }
 
-        #google-form-link {
+        #focus-timer-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #coffee-cup {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        #focus-timer-title {
+            font-size: 36px;
             font-weight: bold;
-            font-size: 18px;
+            letter-spacing: -2px;
         }
 
-        #follow {
+        #app-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
             margin-bottom: 30px;
+        }
+
+        .app-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            width: 200px;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .app-card:hover:not(.disabled) {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .app-icon img {
+            height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .app-icon i {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .app-icon span {
             font-size: 14px;
-            font-weight: normal;
         }
 
-        #instagram-link {
-            font-weight: bold;
+        .coming-soon {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
         }
 
-        #ig {
-            font-size: 15px;
-        }
-
-        #goal-icon {
-            font-size: 15px;
-            margin-right: 2px;
-            margin-left: 2px;
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         #bottomLinks {
             display: flex;
-            justify-content: "center";
-            align-items: "center";
-            font-size: 10;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            flex-wrap: wrap;
         }
 
         #separator {
@@ -107,46 +167,69 @@
             font-weight: normal;
         }
 
-        #contact {
-            font-size: 12px;
-            margin-right: 10px;
-            margin-left: 10px;
-        }
-
+        #contact,
         #privacyPolicy {
             font-size: 12px;
             margin-right: 10px;
             margin-left: 10px;
         }
 
-        #metrics {
-            margin-left: 10px;
-            font-size: 12px;
-            margin-right: 10px;
-        }
-
-        /* unvisited link */
-        a:link {
-            color: black;
-            text-decoration: none;
-        }
-
-        /* visited link */
+        a:link,
         a:visited {
             color: black;
             text-decoration: none;
         }
 
-        /* mouse over link */
-        a:hover {
+        a:hover,
+        a:active {
             color: gray;
             text-decoration: none;
         }
 
-        /* selected link */
-        a:active {
-            color: gray;
-            text-decoration: none;
+        hr {
+            width: 80%;
+            border: none;
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 768px) {
+            .flex-container>h1 {
+                font-size: 48px;
+                letter-spacing: -4px;
+            }
+
+            #focus-timer-title {
+                font-size: 30px;
+                letter-spacing: -1.5px;
+            }
+
+            #coffee-cup {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flex-container>h1 {
+                font-size: 36px;
+                letter-spacing: -3px;
+            }
+
+            #focus-timer-title {
+                font-size: 24px;
+                letter-spacing: -1px;
+            }
+
+            #coffee-cup {
+                width: 24px;
+                height: 24px;
+            }
+
+            .app-card {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -156,29 +239,39 @@
     <div class="flex-container">
         <h1 id="boost-logo">Boost Productivity, Inc.</h1>
         <div id="coming-soon">Our mission is to help you reach your goals.</div>
-        <div id="icons-row">
-            <i id="goal-icon" class="far fa-check-square"></i>
-            <i id="goal-icon" class="fas fa-heartbeat"></i>
-            <i id="goal-icon" class="fas fa-chart-line"></i>
+
+        <hr>
+
+        <div id="focus-timer-section">
+            <div id="focus-timer-header">
+                <img id="coffee-cup" src="coffee_cup.png" alt="Coffee Cup">
+                <div id="focus-timer-title">Boost Focus Timer</div>
+            </div>
+            <div id="app-icons">
+                <a href="https://apps.apple.com/us/app/boost-focus-timer/id6727013499" target="_blank" class="app-card">
+                    <div class="app-icon">
+                        <img src="app_store.svg" alt="Download on the App Store" />
+                        <span>iOS App</span>
+                    </div>
+                </a>
+                <div class="app-card disabled">
+                    <div class="app-icon">
+                        <img src="google_play.svg" alt="Get it on Google Play" />
+                        <span>Android App</span>
+                        <span class="coming-soon">Coming Soon</span>
+                    </div>
+                </div>
+                <a href="https://boost-productivity-126b9.web.app/home" target="_blank" class="app-card">
+                    <div class="app-icon">
+                        <i class="fas fa-globe"></i>
+                        <span>Web App</span>
+                    </div>
+                </a>
+            </div>
         </div>
-        <!-- <div id="google-form">
-            Get the app on
-            <a href="https://apps.apple.com/us/app/boost-habit-tracker/id1578762008?ign-mpt=uo%3D2" target="_blank"
-                id="google-form-link">
-                iOS
-            </a>
-            or
-            <a href="https://play.google.com/store/apps/details?id=co.boostproductivity.boost" target="_blank"
-                id="google-form-link">
-                Android
-            </a>
-        </div>
-        <div id="follow">
-            <a href="https://www.instagram.com/boostproductivityjake/" target="_blank" id="instagram-link">
-                <div id="ig" class="fa fa-instagram"></div> Follow
-            </a>
-            for updates
-        </div> -->
+
+        <hr>
+
         <div id="bottomLinks">
             <div id="contact">
                 <a href="support.html">Support</a>
@@ -190,17 +283,6 @@
                 <a href="privacyPolicy.html">Privacy Policy</a>
             </div>
         </div>
-        <!-- <div id="metrics">
-                <a href="https://docs.google.com/spreadsheets/d/1LH287TT3FbtsWqFJ1Q0tRqB4Se8xDXYLXa2jSmW9OHQ/edit?usp=sharing" target="_blank">Metrics</a>
-            </div>
-            <div id="separator">
-                |
-            </div> -->
-        <!-- <div id="metrics">
-            <a href="https://opensea.io/collection/boost-productivity-nfts" target="_blank">Boost NFTs</a>
-        </div> -->
-    </div>
-    </div>
     </div>
 
 </body>

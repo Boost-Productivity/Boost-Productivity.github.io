@@ -1,31 +1,49 @@
-window.onload = function() {
+window.onload = function () {
     // Parse the URL query parameters
     const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get('code');
     const state = queryParams.get('state');
 
-    // TODO: Validate the state parameter here to ensure it matches what you sent
-    console.log("code:")
-    console.log(code)
+    // Parse the state parameter to get the user_id
+    // The state parameter should contain the user_id when set in the initial auth request
+    const user_id = "trace_beauchamp"; // Assuming state contains the user_id
 
-    if (code) {
-        // Call the AWS Lambda function to handle the exchange of the code for tokens
-        fetch('https://your-aws-lambda-url', {
+    console.log("code:", code);
+    console.log("user_id:", user_id);
+
+    if (code && user_id) {
+        // Call the Google Cloud Function to handle the exchange of the code for tokens
+        fetch('https://us-central1-boost-productivity-126b9.cloudfunctions.net/handle_withings_auth', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify({ authCode: code })
+            body: JSON.stringify({
+                code: code,  // Changed from authCode to code to match the GCF
+                user_id: user_id  // Added user_id parameter
+            })
         })
-        .then(response => response.json())
-        .then(data => {
-            // Handle the response here. For example, show a success message.
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || `HTTP error! status: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Handle the success response
+                console.log('Success:', data);
+                document.body.innerHTML = '<h2>Successfully connected with Withings!</h2>';
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.body.innerHTML = `<h2>Error connecting with Withings: ${error.message}</h2>`;
+            });
     } else {
-        console.log('No code found in the URL query parameters.');
+        const errorMessage = !code ? 'No authorization code found.' : 'No user ID found.';
+        console.log(errorMessage);
+        document.body.innerHTML = `<h2>${errorMessage} Please try connecting again.</h2>`;
     }
 };

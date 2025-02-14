@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Simple Button Test</title>
+    <script>
+        // Randomly select button variant
+        const variant = Math.random() < 0.5 ? 'blue' : 'red';
+
+        // Log page view to cloud function
+        fetch('https://us-central1-boost-productivity-126b9.cloudfunctions.net/log_a_b_test_event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                event: 'page_view',
+                variant: variant,
+                timestamp: new Date().toISOString()
+            })
+        }).then(() => console.log(`Page view logged with variant: ${variant}`));
+
+        // Apply the color when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('test-button');
+            button.style.backgroundColor = variant;
+
+            // Track button clicks
+            button.addEventListener('click', () => {
+                fetch('https://us-central1-boost-productivity-126b9.cloudfunctions.net/log_a_b_test_event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        event: 'button_click',
+                        variant: variant,
+                        timestamp: new Date().toISOString()
+                    })
+                }).then(() => console.log(`Button click logged with variant: ${variant}`));
+            });
+        });
+    </script>
+    <style>
+        button {
+            padding: 20px 40px;
+            font-size: 18px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="test-button">Click Me!</button>
+</body>
+
+</html>

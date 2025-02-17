@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Buy Me a Coffee Button Test</title>
+    <script>
+        // Randomly select button variant (using coffee-themed colors)
+        const variants = {
+            'mocha': '#8B4513',  // Dark brown
+            'latte': '#C4A484'   // Light brown/beige
+        };
+        const variant = Math.random() < 0.5 ? 'mocha' : 'latte';
+
+        // Log page view to cloud function
+        fetch('https://us-central1-boost-productivity-126b9.cloudfunctions.net/log_a_b_test_event', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                event: 'page_view',
+                variant: variant,
+                timestamp: new Date().toISOString()
+            })
+        }).then(() => console.log(`Page view logged with variant: ${variant}`));
+
+        // Apply the color when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('coffee-button');
+            button.style.backgroundColor = variants[variant];
+
+            // Track button clicks
+            button.addEventListener('click', () => {
+                // Log the click event
+                fetch('https://us-central1-boost-productivity-126b9.cloudfunctions.net/log_a_b_test_event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        event: 'button_click',
+                        variant: variant,
+                        timestamp: new Date().toISOString()
+                    })
+                }).then(() => console.log(`Button click logged with variant: ${variant}`));
+
+                // Redirect to Buy Me a Coffee page
+                window.location.href = 'https://www.buymeacoffee.com/yourname';
+            });
+        });
+    </script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Coffee cup icon using emoji */
+        button::before {
+            content: '☕';
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="coffee-button">Buy Me a Coffee</button>
+</body>
+
+</html>

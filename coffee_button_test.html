@@ -4,12 +4,9 @@
 <head>
     <title>Buy Me a Coffee Button Test</title>
     <script>
-        // Randomly select button variant (using coffee-themed colors)
-        const variants = {
-            'mocha': '#8B4513',  // Dark brown
-            'latte': '#C4A484'   // Light brown/beige
-        };
-        const variant = Math.random() < 0.5 ? 'mocha' : 'latte';
+        // Randomly select variant (video or no-video)
+        const variant = Math.random() < 0.5 ? 'video' : 'no-video';
+        const buttonColor = '#C4A484';  // Light brown for all variants
 
         // Log page view to cloud function
         fetch('https://us-central1-boost-productivity-126b9.cloudfunctions.net/log_a_b_test_event', {
@@ -24,10 +21,19 @@
             })
         }).then(() => console.log(`Page view logged with variant: ${variant}`));
 
-        // Apply the color when DOM is loaded
+        // Apply the variant when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('content-container');
             const button = document.getElementById('coffee-button');
-            button.style.backgroundColor = variants[variant];
+
+            // Set button color (same for all variants)
+            button.style.backgroundColor = buttonColor;
+
+            // Show/hide video based on variant
+            if (variant === 'video') {
+                const videoElement = document.getElementById('promo-video');
+                videoElement.style.display = 'block';
+            }
 
             // Track button clicks
             button.addEventListener('click', () => {
@@ -57,6 +63,23 @@
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
+            background-color: #000000;
+        }
+
+        #content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        video {
+            width: 400px;
+            max-width: 90vw;
+            border-radius: 10px;
+            display: none;
+            /* Hidden by default */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         button {
@@ -70,6 +93,7 @@
             align-items: center;
             gap: 10px;
             transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         button:hover {
@@ -85,7 +109,14 @@
 </head>
 
 <body>
-    <button id="coffee-button">Buy Me a Coffee</button>
+    <div id="content-container">
+        <video id="promo-video" controls>
+            <source src="https://ipfs.io/ipfs/bafybeia5iby5lkcdkj2xq6pd56s2jzeddlthlt5pngkvn3y42c5dudlory"
+                type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <button id="coffee-button">Buy Me a Coffee</button>
+    </div>
 </body>
 
 </html>

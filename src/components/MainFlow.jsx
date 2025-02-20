@@ -363,12 +363,22 @@ function MainFlow() {
                     </Panel>
                     <Panel position="top-right" className="p-4">
                         {currentUser ? (
-                            <button
-                                onClick={handleAccountNav}
-                                className="nav-link px-4 py-2 bg-surface text-text-primary border border-border rounded-md hover:bg-border transition-colors"
-                            >
-                                Account
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleAccountNav}
+                                    className="nav-link px-4 py-2 bg-surface text-text-primary border border-border rounded-md hover:bg-border transition-colors"
+                                >
+                                    Account
+                                </button>
+                                {currentUser.email === 'jacob.beauchamp75@gmail.com' && (
+                                    <button
+                                        onClick={() => navigate('/admin')}
+                                        className="nav-link px-4 py-2 bg-surface text-text-primary border border-border rounded-md hover:bg-border transition-colors"
+                                    >
+                                        Admin
+                                    </button>
+                                )}
+                            </div>
                         ) : (
                             <div className="relative">
                                 <div className={`flex gap-2 ${showFlash ? 'animate-pulse' : ''}`}>

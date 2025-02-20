@@ -174,10 +174,14 @@ function MainFlow() {
     }, [currentUser]);
 
     async function handleGoalSubmit(goalText, nodeId) {
-        logEvent(EVENT.NODE.SUBMIT, currentUser?.uid, {
+        // Log the goal submission with the actual text for analytics
+        logEvent(EVENT.NODE.SUBMIT, currentUser?.uid || 'anonymous', {
             nodeId,
-            textLength: goalText.length
+            textLength: goalText.length,
+            goalText: goalText,  // Add this to track the actual text
+            isAnonymous: !currentUser  // Flag to easily filter anonymous submissions
         });
+
         const newId = crypto.randomUUID();
         const sourceNode = nodesRef.current.find(n => n.id === nodeId);
 

@@ -20,7 +20,7 @@ export default function GoogleButton() {
                         <path fill="none" d="M0 0h48v48H0z" />
                     </svg>
                 </div>
-                <span className="text-[#1f1f1f] text-sm font-['Roboto'] font-medium tracking-[0.25px]">
+                <span className="font-['Roboto'] text-sm font-medium tracking-[0.25px] text-[#1f1f1f]">
                     Continue with Google
                 </span>
             </div>

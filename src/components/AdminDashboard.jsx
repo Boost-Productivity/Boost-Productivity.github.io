@@ -18,6 +18,27 @@ function AdminDashboard() {
         anonymousGoals: 0
     });
     const [dailyGoals, setDailyGoals] = useState([]);
+    const [videoMetrics, setVideoMetrics] = useState({
+        totalViews: 0,
+        versionAViews: 0,
+        versionBViews: 0,
+        averageWatchTime: 0,
+        totalLikes: 0
+    });
+    const [versionMetrics, setVersionMetrics] = useState({
+        A: {
+            views: 0,
+            avgWatchTime: 0,
+            likes: 0,
+            feedback: []
+        },
+        B: {
+            views: 0,
+            avgWatchTime: 0,
+            likes: 0,
+            feedback: []
+        }
+    });
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
@@ -70,6 +91,64 @@ function AdminDashboard() {
             activeUsers,
             anonymousGoals: anonymousGoals.length
         });
+
+        // Video metrics
+        const videoViews = events.filter(e => e.type === 'video_view');
+        const versionAViews = videoViews.filter(e => e.version === 'A').length;
+        const versionBViews = videoViews.filter(e => e.version === 'B').length;
+
+        const videoEvents = events.filter(e => e.type.startsWith('video_'));
+
+        const metrics = {
+            A: {
+                views: videoEvents.filter(e => e.version === 'A' && e.type === 'video_view').length,
+                likes: videoEvents.filter(e => e.version === 'A' && e.type === 'video_like' && e.action === 'like').length,
+                avgWatchTime: 0,
+                feedback: videoEvents
+                    .filter(e => e.version === 'A' && e.type === 'video_feedback')
+                    .map(e => ({ feedback: e.feedback, timestamp: e.timestamp }))
+            },
+            B: {
+                views: videoEvents.filter(e => e.version === 'B' && e.type === 'video_view').length,
+                likes: videoEvents.filter(e => e.version === 'B' && e.type === 'video_like' && e.action === 'like').length,
+                avgWatchTime: 0,
+                feedback: videoEvents
+                    .filter(e => e.version === 'B' && e.type === 'video_feedback')
+                    .map(e => ({ feedback: e.feedback, timestamp: e.timestamp }))
+            }
+        };
+
+        // Calculate average watch time per session for each version
+        const watchTimesBySession = {
+            A: new Map(),
+            B: new Map()
+        };
+
+        videoEvents
+            .filter(e => e.type === 'video_watch_time')
+            .forEach(e => {
+                const version = e.version;
+                const sessionId = e.sessionId;
+                const watchTime = e.watchTime;
+
+                if (version && sessionId) {
+                    // Keep only the maximum watch time for each session
+                    const currentMax = watchTimesBySession[version].get(sessionId) || 0;
+                    if (watchTime > currentMax) {
+                        watchTimesBySession[version].set(sessionId, watchTime);
+                    }
+                }
+            });
+
+        // Calculate average watch time for each version
+        ['A', 'B'].forEach(version => {
+            const watchTimes = Array.from(watchTimesBySession[version].values());
+            metrics[version].avgWatchTime = watchTimes.length > 0
+                ? Math.round(watchTimes.reduce((sum, time) => sum + time, 0) / watchTimes.length)
+                : 0;
+        });
+
+        setVersionMetrics(metrics);
     };
 
     const calculateDailyGoals = (events) => {
@@ -173,6 +252,53 @@ function AdminDashboard() {
                                 </div>
                             </div>
                         ))}
+                </div>
+            </div>
+
+            {/* A/B Test Comparison */}
+            <div className="bg-surface p-4 rounded-lg border border-border mb-8">
+                <h2 className="text-lg font-bold mb-4">A/B Test Comparison</h2>
+
+                <div className="grid grid-cols-2 gap-8">
+                    {['A', 'B'].map(version => (
+                        <div key={version} className="space-y-6">
+                            <div className="text-xl font-semibold mb-4 text-center">
+                                Version {version}
+                                <span className="text-sm text-text-secondary ml-2">
+                                    ({version === 'A' ? 'with intro' : 'without intro'})
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="bg-background p-4 rounded-lg border border-border">
+                                    <h3 className="text-text-secondary text-sm mb-1">Views</h3>
+                                    <div className="text-2xl font-bold">{versionMetrics[version].views}</div>
+                                </div>
+                                <div className="bg-background p-4 rounded-lg border border-border">
+                                    <h3 className="text-text-secondary text-sm mb-1">Average Watch Time</h3>
+                                    <div className="text-2xl font-bold">{versionMetrics[version].avgWatchTime}s</div>
+                                </div>
+                                <div className="bg-background p-4 rounded-lg border border-border">
+                                    <h3 className="text-text-secondary text-sm mb-1">Likes</h3>
+                                    <div className="text-2xl font-bold">{versionMetrics[version].likes}</div>
+                                </div>
+
+                                <div className="bg-background p-4 rounded-lg border border-border">
+                                    <h3 className="text-text-secondary text-sm mb-2">Feedback</h3>
+                                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                                        {versionMetrics[version].feedback.map((item, i) => (
+                                            <div key={i} className="text-sm p-3 bg-surface rounded border border-border">
+                                                <div>{item.feedback}</div>
+                                                <div className="text-xs text-text-secondary mt-1">
+                                                    {new Date(item.timestamp).toLocaleString()}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 

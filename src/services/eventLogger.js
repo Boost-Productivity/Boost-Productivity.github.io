@@ -40,6 +40,13 @@ const EVENT = {
         DELETE_ACCOUNT_CLICK: 'delete_account_clicked',
         DELETE_ACCOUNT_CONFIRM: 'delete_account_confirm',
         DELETE_ACCOUNT_SUCCESS: 'delete_account_success'
+    },
+    VIDEO: {
+        TEST_PAGE_VIEW: 'video_test_page_view',
+        PLAY: 'video_play',
+        PAUSE: 'video_pause',
+        SEEK: 'video_seek',
+        COMPLETE: 'video_complete'
     }
 };
 

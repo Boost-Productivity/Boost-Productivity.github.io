@@ -95,14 +95,12 @@ function VideoTest() {
                     setWatchTime(newWatchTime);
                     lastPlayTime = currentTime;
 
-                    // Log watch time every 5 seconds
-                    if (Math.floor(newWatchTime) % 5 === 0) {
-                        logEvent('video_watch_time', {
-                            version,
-                            sessionId,
-                            watchTime: newWatchTime
-                        });
-                    }
+                    // Log watch time every second
+                    logEvent('video_watch_time', {
+                        version,
+                        sessionId,
+                        watchTime: newWatchTime
+                    });
                 }
             }, 1000);
         };

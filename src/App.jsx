@@ -6,6 +6,7 @@ import AccountPage from './components/AccountPage';
 import MainFlow from './components/MainFlow';
 import DangerZone from './components/DangerZone';
 import AdminDashboard from './components/AdminDashboard';
+import VideoTest from './components/VideoTest';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/account" element={<AccountPage />} />
           <Route path="/settings/advanced" element={<DangerZone />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/video-test" element={<VideoTest />} />
         </Routes>
       </ReactFlowProvider>
     </Router>

@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .input-base {
+    @apply p-2 border border-[#ddd] rounded w-full;
+  }
+
+  .auth-input {
+    @apply input-base max-w-[300px];
+  }
+
+  .node-input {
+    @apply input-base mb-2.5;
+  }
+
+  .auth-content {
+    @apply flex flex-col items-center justify-center min-h-screen p-5 gap-2 w-full;
+  }
+
+  .auth-content form {
+    @apply flex flex-col items-center w-full max-w-[300px];
+  }
+
+  .auth-content h3 {
+    @apply m-0 mb-3 text-center text-white text-xl;
+  }
+
+  .auth-content input {
+    @apply w-full p-2 border border-[#ddd] rounded mb-2;
+  }
+
+  .auth-content button {
+    @apply w-full p-2 bg-[#4CAF50] text-white border-none rounded cursor-pointer mt-1;
+  }
+
+  .switch-auth {
+    @apply bg-transparent border-none text-[#4CAF50] cursor-pointer p-1 mt-2;
+  }
+}
+
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base text color */
+body {
+  color: white;
+}
+
+/* Auth specific styles */
+.auth-content {
+  color: white;
+}
+
+.auth-content h3 {
+  margin: 0 0 12px 0;
+  text-align: center;
+  color: white !important;
+  /* Using !important to override any conflicting styles */
+}
+
+/* Basic flow container */
+.react-flow {
+  width: 100vw;
+  height: 100vh;
+  color: white;
+}
+
+/* Auth node styling */
+.auth-node {
+  background: white;
+  padding: 20px;
+  width: 300px;
+}
+
+.auth-form-input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+.auth-node button {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.auth-node .switch-auth {
+  background: none;
+  color: blue;
+  text-decoration: underline;
+}
+
+.error {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  text-align: center;
+  border: 1px solid #dc3545;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #1a1a1a;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  background: #1a1a1a;
+  overflow-y: auto;
+}
+
+.auth-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  border: 1px solid #333;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  margin-top: 0;
+}
+
+.auth-container form {
+  width: 100%;
+  margin-bottom: 20px;
+}

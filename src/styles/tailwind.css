@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .input-base {
+        @apply p-2 border border-[#ddd] rounded w-full;
+    }
+
+    .auth-input {
+        @apply input-base max-w-[300px];
+    }
+
+    .node-input {
+        @apply input-base mb-2.5;
+    }
+}

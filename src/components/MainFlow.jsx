@@ -120,7 +120,7 @@ function MainFlow() {
                 position: { x: window.innerWidth / 2 - 100, y: INITIAL_Y },
                 data: {
                     id: '1',
-                    name: 'Note', // Default type
+                    name: 'Goal',
                     message: "",
                     onSubmit: handleNodeSubmit,
                     onDelete: handleDeleteNode

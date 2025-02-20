@@ -176,77 +176,78 @@ function VideoTest() {
 
     return (
         <div className="min-h-screen bg-black flex items-center justify-center">
-            <div className="relative h-[100vh] w-full max-w-[500px] bg-black">
-                <div className="h-full w-full relative">
-                    <video
-                        ref={videoRef}
-                        className="h-full w-full object-cover"
-                        playsInline
-                        autoPlay
-                        muted={isMuted}
-                        loop
-                        src={videoUrl}
-                        onClick={() => {
-                            const video = videoRef.current;
-                            if (video) {
-                                const newMutedState = !video.muted;
-                                video.muted = newMutedState;
-                                setIsMuted(newMutedState);
-                            }
-                        }}
-                    />
+            <div className="relative h-screen w-full bg-black">
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative max-h-full aspect-[9/16] bg-black">
+                        <video
+                            ref={videoRef}
+                            className="h-full w-full object-contain"
+                            playsInline
+                            autoPlay
+                            muted={isMuted}
+                            loop
+                            src={videoUrl}
+                            onClick={() => {
+                                const video = videoRef.current;
+                                if (video) {
+                                    const newMutedState = !video.muted;
+                                    video.muted = newMutedState;
+                                    setIsMuted(newMutedState);
+                                }
+                            }}
+                        />
 
-                    {/* Sound Indicator - now using React state instead of DOM element */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        {isMuted && (
-                            <div className="bg-black/50 rounded-full p-6">
-                                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                                </svg>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Interaction Overlay */}
-                    <div className="absolute right-4 bottom-20 flex flex-col items-center gap-6">
-                        <button
-                            onClick={handleLike}
-                            className="flex flex-col items-center gap-1"
-                        >
-                            {liked ? (
-                                <IoThumbsUp className="text-primary w-8 h-8" />
-                            ) : (
-                                <IoThumbsUpOutline className="text-white w-8 h-8" />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            {isMuted && (
+                                <div className="bg-black/50 rounded-full p-6">
+                                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                    </svg>
+                                </div>
                             )}
-                            <span className="text-white text-sm">
-                                {liked ? 'Liked' : 'Like'}
-                            </span>
-                        </button>
+                        </div>
 
-                        <button
-                            onClick={() => setShowFeedback(true)}
-                            className="flex flex-col items-center gap-1"
-                        >
-                            <IoChatbubbleOutline className="text-white w-8 h-8" />
-                            <span className="text-white text-sm">Feedback</span>
-                        </button>
+                        {/* Buttons */}
+                        <div className="absolute right-8 sm:right-10 bottom-12 sm:bottom-14 flex flex-col items-center gap-8 sm:gap-8 z-10">
+                            <button
+                                onClick={handleLike}
+                                className="flex flex-col items-center gap-3"
+                            >
+                                {liked ? (
+                                    <IoThumbsUp className="text-primary w-16 h-16 sm:w-14 sm:h-14" />
+                                ) : (
+                                    <IoThumbsUpOutline className="text-white w-16 h-16 sm:w-14 sm:h-14" />
+                                )}
+                                <span className="text-white text-lg sm:text-base font-medium">
+                                    {liked ? 'Liked' : 'Like'}
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={() => setShowFeedback(true)}
+                                className="flex flex-col items-center gap-3"
+                            >
+                                <IoChatbubbleOutline className="text-white w-16 h-16 sm:w-14 sm:h-14" />
+                                <span className="text-white text-lg sm:text-base font-medium">Feedback</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Feedback Modal */}
             {showFeedback && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                    <div className="bg-surface p-6 rounded-lg w-full max-w-md">
-                        <h3 className="text-lg font-semibold mb-4 text-text-primary">
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 sm:p-6">
+                    <div className="bg-surface p-4 sm:p-6 rounded-lg w-full max-w-md mx-4">
+                        <h3 className="text-xl sm:text-2xl font-semibold mb-4 text-text-primary">
                             Share your thoughts
                         </h3>
                         <form onSubmit={handleFeedbackSubmit}>
                             <textarea
                                 value={feedback}
                                 onChange={(e) => setFeedback(e.target.value)}
-                                className="w-full h-32 bg-background border border-border rounded-lg p-3 text-text-primary resize-none focus:outline-none focus:border-primary"
+                                className="w-full h-32 sm:h-40 bg-background border border-border rounded-lg p-3 sm:p-4 text-base sm:text-lg text-text-primary resize-none focus:outline-none focus:border-primary"
                                 placeholder="What did you think about this video?"
                                 autoFocus
                             />
@@ -254,13 +255,13 @@ function VideoTest() {
                                 <button
                                     type="button"
                                     onClick={() => setShowFeedback(false)}
-                                    className="px-4 py-2 text-text-primary"
+                                    className="px-4 py-2 sm:px-6 sm:py-3 text-base sm:text-lg text-text-primary"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-primary text-white rounded-md"
+                                    className="px-4 py-2 sm:px-6 sm:py-3 text-base sm:text-lg bg-primary text-white rounded-md"
                                 >
                                     Submit
                                 </button>

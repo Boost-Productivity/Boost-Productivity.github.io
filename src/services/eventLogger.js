@@ -23,7 +23,7 @@ const EVENT = {
     NODE: {
         SUBMIT: 'node_submitted',
         DELETE: 'node_deleted',
-        MOVE: 'node_moved_from_to'
+        MOVE: 'node_moved'
     },
     ACCOUNT: {
         EMAIL_UPDATE_CLICK: 'update_email_clicked',

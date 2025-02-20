@@ -4,8 +4,10 @@ import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { getAuth } from 'firebase/auth';
 
 const ALLOWED_EMAILS = ['jacob.beauchamp75@gmail.com'];
+const ADMIN_USER_ID = 'zsQNFSuTo2cC1TVCdEMeBA4VbbS2';
 
 function AdminDashboard() {
     const [events, setEvents] = useState([]);
@@ -20,12 +22,11 @@ function AdminDashboard() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!currentUser || !ALLOWED_EMAILS.includes(currentUser.email)) {
+        if (!currentUser || currentUser.uid !== ADMIN_USER_ID) {
             navigate('/');
             return;
         }
 
-        // Get last 30 days of events
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -36,11 +37,14 @@ function AdminDashboard() {
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const newEvents = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                timestamp: doc.data().timestamp.toDate()
-            }));
+            const newEvents = snapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    timestamp: doc.data().timestamp.toDate()
+                }))
+                .filter(event => event.userId !== ADMIN_USER_ID);
+
             setEvents(newEvents);
             calculateMetrics(newEvents);
             calculateDailyGoals(newEvents);
@@ -84,7 +88,7 @@ function AdminDashboard() {
         setDailyGoals(sortedData);
     };
 
-    if (!currentUser || !ALLOWED_EMAILS.includes(currentUser.email)) {
+    if (!currentUser || currentUser.uid !== ADMIN_USER_ID) {
         return null;
     }
 
@@ -146,26 +150,50 @@ function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Recent Events */}
+            {/* Goals Section */}
+            <div className="bg-surface p-4 rounded-lg border border-border mb-8">
+                <h2 className="text-lg font-bold mb-4">Recent Goals</h2>
+                <div className="space-y-4">
+                    {events
+                        .filter(event => event.type === 'node_submitted')
+                        .slice(0, 20)
+                        .map(event => (
+                            <div key={event.id} className="bg-background p-4 rounded-lg border border-border">
+                                <div className="text-lg">{event.data.goalText}</div>
+                                <div className="mt-2 text-sm text-text-secondary flex flex-col gap-1">
+                                    <div className="flex justify-between items-center">
+                                        <span className={event.userId === 'anonymous' ? 'text-yellow-500' : 'text-green-500'}>
+                                            {event.userId === 'anonymous' ? '👤 Anonymous' : '✓ ' + event.userId}
+                                        </span>
+                                        <span>{new Date(event.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <div className="text-xs opacity-60">
+                                        Session: {event.sessionId || 'No session ID'}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                </div>
+            </div>
+
+            {/* Recent Events Section */}
             <div className="bg-surface p-4 rounded-lg border border-border">
                 <h2 className="text-lg font-bold mb-4">Recent Events</h2>
                 <div className="space-y-4">
-                    {events.slice(0, 10).map(event => (
-                        <div key={event.id} className="bg-background p-4 rounded-lg border border-border">
-                            <div className="font-medium">{event.type}</div>
-                            <div className="text-text-secondary text-sm">
-                                User: {event.userId}
-                            </div>
-                            <div className="text-text-secondary text-sm">
-                                {event.timestamp.toString()}
-                            </div>
-                            {event.type === 'node_submitted' && (
-                                <div className="mt-2 text-sm bg-surface/50 p-2 rounded">
-                                    Goal: {event.data.goalText}
+                    {events
+                        .filter(event => event.type !== 'node_submitted')
+                        .slice(0, 10)
+                        .map(event => (
+                            <div key={event.id} className="bg-background p-4 rounded-lg border border-border">
+                                <div className="font-medium">{event.type}</div>
+                                <div className="text-text-secondary text-sm">
+                                    User: {event.userId}
                                 </div>
-                            )}
-                        </div>
-                    ))}
+                                <div className="text-text-secondary text-sm">
+                                    {new Date(event.timestamp).toLocaleString()}
+                                </div>
+                            </div>
+                        ))}
                 </div>
             </div>
         </div>

@@ -36,6 +36,7 @@ function MainFlow() {
     const [modalOpenTime, setModalOpenTime] = useState(0);
     const [showNodeTypeModal, setShowNodeTypeModal] = useState(false);
     const [newNodeType, setNewNodeType] = useState('');
+    const [flashMessage, setFlashMessage] = useState('');
 
     const handleNodeSubmit = useCallback(async (text, nodeId) => {
         const sourceNode = nodesRef.current.find(n => n.id === nodeId);
@@ -49,6 +50,7 @@ function MainFlow() {
 
         if (!currentUser) {
             setUnsavedNodes(prev => [...prev, { message: text, nodeType }]);
+            setFlashMessage('Log in to save your goals');
             setShowFlash(true);
             setTimeout(() => setShowFlash(false), 2000);
             return;
@@ -419,7 +421,15 @@ function MainFlow() {
                     <Panel position="top-left" className="p-4 flex items-center gap-4">
                         <h1 className="text-2xl font-bold text-text-primary">boost.</h1>
                         <button
-                            onClick={() => setShowNodeTypeModal(true)}
+                            onClick={() => {
+                                if (!currentUser) {
+                                    setFlashMessage('Log in to create more node types');
+                                    setShowFlash(true);
+                                    setTimeout(() => setShowFlash(false), 2000);
+                                    return;
+                                }
+                                setShowNodeTypeModal(true);
+                            }}
                             className="nav-link px-4 py-2 bg-surface text-text-primary border border-border rounded-md hover:bg-border transition-colors"
                         >
                             + New Node Type
@@ -461,7 +471,7 @@ function MainFlow() {
                                 </div>
                                 {showFlash && (
                                     <div className="absolute top-full right-0 mt-2 bg-surface-secondary text-text-primary px-4 py-2 rounded-md shadow-lg whitespace-nowrap border border-border">
-                                        Log in to save your goals
+                                        {flashMessage || 'Log in to save your goals'}
                                     </div>
                                 )}
                             </div>

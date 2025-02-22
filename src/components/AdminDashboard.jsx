@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, onSnapshot, where, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where, Timestamp, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -51,13 +51,18 @@ function AdminDashboard() {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const q = query(
-            collection(db, 'events'),
-            where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-            orderBy('timestamp', 'desc')
-        );
+        const fetchEvents = async () => {
+            const q = query(
+                collection(db, 'events'),
+                where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+                orderBy('timestamp', 'desc')
+            );
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+            console.time('fetchEvents');
+            const snapshot = await getDocs(q);
+            console.timeEnd('fetchEvents');
+
+            console.time('processEvents');
             const newEvents = snapshot.docs
                 .map(doc => ({
                     id: doc.id,
@@ -65,13 +70,16 @@ function AdminDashboard() {
                     timestamp: doc.data().timestamp.toDate()
                 }))
                 .filter(event => event.userId !== ADMIN_USER_ID);
+            console.timeEnd('processEvents');
 
+            console.time('calculations');
             setEvents(newEvents);
             calculateMetrics(newEvents);
             calculateDailyGoals(newEvents);
-        });
+            console.timeEnd('calculations');
+        };
 
-        return () => unsubscribe();
+        fetchEvents();
     }, [currentUser, navigate]);
 
     const calculateMetrics = (events) => {

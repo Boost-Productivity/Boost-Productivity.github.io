@@ -36,11 +36,42 @@ const FullscreenEditor = ({ value, onChange, onSubmit, onClose, nodeName }) => {
     );
 };
 
+const FilePreview = ({ url, fileName, type }) => {
+    // Check if it's an image by file extension
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName);
+
+    if (isImage) {
+        return (
+            <div className="mt-2">
+                <img
+                    src={url}
+                    alt={fileName}
+                    className="max-w-full h-auto rounded-lg border border-border"
+                    style={{ maxHeight: '200px' }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div className="mt-2 p-3 bg-background rounded-lg border border-border flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <span className="text-sm truncate">{fileName}</span>
+        </div>
+    );
+};
+
 const FieldNode = ({ data }) => {
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState(data.message || '');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const inputRef = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     const focusInput = () => {
         if (inputRef.current) {
@@ -83,6 +114,27 @@ const FieldNode = ({ data }) => {
         return text.slice(0, maxLength) + '...';
     };
 
+    // Add drag and drop handlers
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const file = e.dataTransfer.files[0];
+        if (file && data.onFileSubmit) {
+            await data.onFileSubmit(file, data.id);
+        }
+    };
+
     return (
         <div className="field-node relative bg-surface border border-border rounded-lg w-[400px]">
             {data.onDeleteType && (
@@ -102,36 +154,50 @@ const FieldNode = ({ data }) => {
                     ×
                 </span>
             )}
-            <div className="field-content">
-                <div className="field-name">{data.name}</div>
+            <div className="p-4">
+                <h2 className="text-lg font-medium mb-2 text-text-primary">{data.name}</h2>
                 {data.isSubmitted ? (
-                    <div className={`text-center py-2 ${!isExpanded ? 'h-[100px]' : ''}`}>
-                        <div className={`text-success ${!isExpanded ? 'h-[60px] overflow-hidden' : ''}`}>
-                            {isExpanded ? (
-                                <div className="whitespace-pre-wrap break-words">{data.message}</div>
-                            ) : (
-                                <div className="line-clamp-2">{data.message}</div>
-                            )}
-                        </div>
-                        {data.message.length > 100 && (
-                            <button
-                                onClick={() => setIsExpanded(!isExpanded)}
-                                className="text-xs text-text-secondary hover:text-text-primary mt-1"
-                            >
-                                {isExpanded ? 'Show less' : 'Show more'}
-                            </button>
+                    <div className="text-text-primary">
+                        {data.isFile ? (
+                            <div>
+                                <a
+                                    href={data.message}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline inline-flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    {data.fileName || 'Download File'}
+                                </a>
+                                <FilePreview
+                                    url={data.message}
+                                    fileName={data.fileName}
+                                />
+                            </div>
+                        ) : (
+                            data.message
                         )}
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="field-form">
-                        <div className="relative">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="field-form"
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                    >
+                        <div className={`relative ${isDragging ? 'bg-primary/10' : ''}`}>
                             <input
                                 ref={inputRef}
                                 type="text"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-text-primary focus:outline-none focus:border-primary"
-                                placeholder={`Type your ${data.name.toLowerCase()} here...`}
+                                placeholder={`Type or drop a file for ${data.name.toLowerCase()}...`}
                             />
                             <button
                                 type="button"

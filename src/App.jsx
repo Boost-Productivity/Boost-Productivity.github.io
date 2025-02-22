@@ -7,6 +7,7 @@ import MainFlow from './components/MainFlow';
 import DangerZone from './components/DangerZone';
 import AdminDashboard from './components/AdminDashboard';
 import VideoTest from './components/VideoTest';
+import CameraFeed from './components/CameraFeed';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/settings/advanced" element={<DangerZone />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/video-test" element={<VideoTest />} />
+          <Route path="/camera" element={<CameraFeed />} />
         </Routes>
       </ReactFlowProvider>
     </Router>

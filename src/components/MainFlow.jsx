@@ -14,8 +14,9 @@ import FieldNode from './FieldNode';
 import { useAuth } from '../contexts/AuthContext';
 import Login from './Login';
 import Signup from './Signup';
-import { db } from '../firebase';
+import { db, storage } from '../firebase';
 import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, setDoc, deleteField, getDocs } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { logEvent, EVENT, initSession } from '../services/eventLogger';
 
 const nodeTypes = {
@@ -37,6 +38,43 @@ function MainFlow() {
     const [showNodeTypeModal, setShowNodeTypeModal] = useState(false);
     const [newNodeType, setNewNodeType] = useState('');
     const [flashMessage, setFlashMessage] = useState('');
+
+    const handleFileSubmit = useCallback(async (file, nodeId) => {
+        const sourceNode = nodesRef.current.find(n => n.id === nodeId);
+        if (!sourceNode || !currentUser) return;
+
+        try {
+            // Upload file to Firebase Storage
+            const timestamp = Date.now();
+            const filename = `${currentUser.uid}/${nodeId}/${timestamp}_${file.name}`;
+            const storageRef = ref(storage, filename);
+
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            // Then save the node with the file URL
+            const nodeType = sourceNode.data.name;
+            const collectionName = nodeType.toLowerCase().replace(/\s+/g, '_') + 's';
+            const collectionRef = collection(db, `users/${currentUser.uid}/${collectionName}`);
+
+            const docData = {
+                type: 'field',
+                data: {
+                    message: downloadURL,
+                    name: nodeType,
+                    isSubmitted: true,
+                    isFile: true,
+                    fileName: file.name
+                },
+                position: sourceNode.position,
+                createdAt: new Date()
+            };
+
+            await addDoc(collectionRef, docData);
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        }
+    }, [currentUser]);
 
     const handleNodeSubmit = useCallback(async (text, nodeId) => {
         const sourceNode = nodesRef.current.find(n => n.id === nodeId);
@@ -125,6 +163,7 @@ function MainFlow() {
                     name: 'Goal',
                     message: "",
                     onSubmit: handleNodeSubmit,
+                    onFileSubmit: handleFileSubmit,
                     onDelete: handleDeleteNode
                 }
             }]);
@@ -161,6 +200,7 @@ function MainFlow() {
                     ).join(' '),
                     message: "",
                     onSubmit: handleNodeSubmit,
+                    onFileSubmit: handleFileSubmit,
                     onDelete: handleDeleteNode,
                     onDeleteType: undefined,
                     key: Date.now()
@@ -192,6 +232,7 @@ function MainFlow() {
                             message: doc.data().data?.message || "",
                             isSubmitted: true,
                             onSubmit: handleNodeSubmit,
+                            onFileSubmit: handleFileSubmit,
                             onDelete: handleDeleteNode
                         }
                     }));
@@ -223,7 +264,7 @@ function MainFlow() {
                 unsubscribers.forEach(unsub => unsub());
             };
         });
-    }, [currentUser]);
+    }, [currentUser, handleNodeSubmit, handleFileSubmit, handleDeleteNode]);
 
     // Add effect to save unsaved goals when user logs in
     useEffect(() => {
@@ -346,6 +387,7 @@ function MainFlow() {
                         name: newNodeType,
                         message: "",
                         onSubmit: handleNodeSubmit,
+                        onFileSubmit: handleFileSubmit,
                         onDelete: handleDeleteNode,
                         key: Date.now(),
                         registerFocus: (focusFn) => {

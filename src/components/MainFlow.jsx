@@ -6,7 +6,8 @@ import {
     Background,
     applyNodeChanges,
     applyEdgeChanges,
-    Panel
+    Panel,
+    useReactFlow
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import '../theme.css';
@@ -26,6 +27,9 @@ const nodeTypes = {
 // Add this near the top with other constants
 const proOptions = { hideAttribution: true };
 
+// Add this constant at the top with other constants
+const NODE_WIDTH = 400;  // Actual width of the node including padding
+
 function MainFlow() {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
@@ -38,6 +42,9 @@ function MainFlow() {
     const [showNodeTypeModal, setShowNodeTypeModal] = useState(false);
     const [newNodeType, setNewNodeType] = useState('');
     const [flashMessage, setFlashMessage] = useState('');
+    const [nodeTypeFilter, setNodeTypeFilter] = useState('all');
+
+    const reactFlowInstance = useReactFlow();
 
     const handleFileSubmit = useCallback(async (file, nodeId) => {
         const sourceNode = nodesRef.current.find(n => n.id === nodeId);
@@ -134,12 +141,12 @@ function MainFlow() {
         }
     }, [currentUser]);
 
-    // Update the spacing constants
-    const INITIAL_Y = 100;  // Starting position
-    const FIRST_NODE_SPACING = 200;  // Keep the bigger gap after empty node
-    const NODE_HEIGHT = 140;  // Keep original height
-    const VERTICAL_GAP = 60;  // Small increase from 40
-    const NODE_SPACING = NODE_HEIGHT + VERTICAL_GAP;  // Total vertical space per node
+    // Update the constants
+    const INITIAL_Y = 100;  // Consistent starting point
+    const FIRST_NODE_SPACING = 120;  // Slightly reduced spacing
+    const NODE_HEIGHT = 140;
+    const VERTICAL_GAP = 30;  // Reduced gap
+    const NODE_SPACING = NODE_HEIGHT + VERTICAL_GAP;
 
     const [nodes, setNodes] = useState([]);
     const [customNodeTypes, setCustomNodeTypes] = useState(new Set());
@@ -151,13 +158,16 @@ function MainFlow() {
         nodesRef.current = nodes;
     }, [nodes]);
 
+    // Add this function inside MainFlow component
+    const calculateCenterX = () => (window.innerWidth - NODE_WIDTH) / 2;
+
     // First, update the useEffect that loads nodes to handle multiple collections
     useEffect(() => {
         if (!currentUser) {
             setNodes([{
                 id: '1',
                 type: 'field',
-                position: { x: window.innerWidth / 2 - 100, y: INITIAL_Y },
+                position: { x: calculateCenterX(), y: INITIAL_Y },
                 data: {
                     id: '1',
                     name: 'Goal',
@@ -170,101 +180,80 @@ function MainFlow() {
             return;
         }
 
-        // First get user's node types
         const unsubscribe = onSnapshot(doc(db, 'users', currentUser.uid), (userDoc) => {
             if (!userDoc.exists()) return;
 
-            // Get all node types (including 'goals' by default)
             const types = ['goals', ...Object.keys(userDoc.data()?.nodeTypes || {})];
             setCustomNodeTypes(new Set(types));
 
-            // Calculate positions for each type
-            const screenPadding = 100;
-            const nodeWidth = 400;
-            const gapBetweenStacks = 60;
-            const totalWidth = (nodeWidth * types.length) + (gapBetweenStacks * (types.length - 1));
-            const startX = (window.innerWidth - totalWidth) / 2;
+            const centerX = calculateCenterX();
 
-            // Immediately set empty nodes
-            const emptyNodes = types.map((type, index) => ({
-                id: `empty_${type}`,
+            const emptyNodes = [{
+                id: `empty_${nodeTypeFilter === 'all' ? 'goals' : nodeTypeFilter.toLowerCase().replace(/\s+/g, '_') + 's'}`,
                 type: 'field',
-                position: {
-                    x: startX + (index * (nodeWidth + gapBetweenStacks)),
-                    y: INITIAL_Y
-                },
+                position: { x: centerX, y: INITIAL_Y },
                 data: {
-                    id: `empty_${type}`,
-                    name: type === 'goals' ? 'Goal' : type.slice(0, -1).split('_').map(word =>
-                        word.charAt(0).toUpperCase() + word.slice(1)
-                    ).join(' '),
+                    id: `empty_${nodeTypeFilter === 'all' ? 'goals' : nodeTypeFilter.toLowerCase().replace(/\s+/g, '_') + 's'}`,
+                    name: nodeTypeFilter === 'all' ? 'Goal' : nodeTypeFilter,
                     message: "",
                     onSubmit: handleNodeSubmit,
                     onFileSubmit: handleFileSubmit,
                     onDelete: handleDeleteNode,
-                    onDeleteType: undefined,
+                    onDeleteType: nodeTypeFilter !== 'all' && nodeTypeFilter.toLowerCase() !== 'goal' ? handleDeleteNodeType : undefined,
                     key: Date.now()
                 }
-            }));
+            }];
 
             setNodes(emptyNodes);
 
-            // Subscribe to each type's collection
-            const unsubscribers = types.map((type, index) => {
-                const q = query(
-                    collection(db, `users/${currentUser.uid}/${type}`),
-                    orderBy('createdAt', 'desc')
-                );
+            // Subscribe only to the currently selected type's collection
+            const currentType = nodeTypeFilter === 'all' ? 'goals' : nodeTypeFilter.toLowerCase().replace(/\s+/g, '_') + 's';
 
-                return onSnapshot(q, (snapshot) => {
-                    const items = snapshot.docs.map((doc, itemIndex) => ({
+            if (!types.includes(currentType)) {
+                return;
+            }
+
+            const q = query(
+                collection(db, `users/${currentUser.uid}/${currentType}`),
+                orderBy('createdAt', 'desc')
+            );
+
+            const unsubscribeNodes = onSnapshot(q, (snapshot) => {
+                const items = snapshot.docs.map((doc, itemIndex) => ({
+                    id: doc.id,
+                    type: 'field',
+                    position: {
+                        x: centerX,
+                        y: INITIAL_Y + FIRST_NODE_SPACING + (itemIndex * NODE_SPACING)
+                    },
+                    data: {
                         id: doc.id,
-                        type: 'field',
-                        position: {
-                            x: startX + (index * (nodeWidth + gapBetweenStacks)),
-                            y: INITIAL_Y + FIRST_NODE_SPACING + (itemIndex * NODE_SPACING)
-                        },
-                        data: {
-                            id: doc.id,
-                            name: type === 'goals' ? 'Goal' : type.slice(0, -1).split('_').map(word =>
-                                word.charAt(0).toUpperCase() + word.slice(1)
-                            ).join(' '),
-                            message: doc.data().data?.message || "",
-                            isSubmitted: true,
-                            onSubmit: handleNodeSubmit,
-                            onFileSubmit: handleFileSubmit,
-                            onDelete: handleDeleteNode
-                        }
-                    }));
+                        name: nodeTypeFilter === 'all' ? 'Goal' : nodeTypeFilter,
+                        message: doc.data().data?.message || "",
+                        isSubmitted: true,
+                        onSubmit: handleNodeSubmit,
+                        onFileSubmit: handleFileSubmit,
+                        onDelete: handleDeleteNode,
+                        isFile: doc.data().data?.isFile,
+                        fileName: doc.data().data?.fileName
+                    }
+                }));
 
-                    setNodes(currentNodes => {
-                        // Keep nodes of other types
-                        const otherTypeNodes = currentNodes.filter(n => {
-                            const nodeType = n.data.name.toLowerCase().replace(/\s+/g, '_') + 's';
-                            return nodeType !== type;
-                        });
-
-                        // Only show delete option if there are no items
-                        const emptyNodeForType = {
-                            ...emptyNodes[index],
-                            data: {
-                                ...emptyNodes[index].data,
-                                // Only show delete option for non-goals type AND when there are no items
-                                onDeleteType: type !== 'goals' && items.length === 0 ? handleDeleteNodeType : undefined
-                            }
-                        };
-
-                        // Add back the empty node and the updated items for this type
-                        return [...otherTypeNodes, emptyNodeForType, ...items];
-                    });
+                setNodes(currentNodes => {
+                    const emptyNode = currentNodes.find(n => n.id.startsWith('empty_'));
+                    return [emptyNode, ...items];
                 });
             });
 
             return () => {
-                unsubscribers.forEach(unsub => unsub());
+                unsubscribeNodes();
             };
         });
-    }, [currentUser, handleNodeSubmit, handleFileSubmit, handleDeleteNode]);
+
+        return () => {
+            unsubscribe();
+        };
+    }, [currentUser, handleNodeSubmit, handleFileSubmit, handleDeleteNode, nodeTypeFilter]);
 
     // Add effect to save unsaved goals when user logs in
     useEffect(() => {
@@ -442,6 +431,23 @@ function MainFlow() {
         }
     };
 
+    // Add a new useEffect to handle window resizing
+    useEffect(() => {
+        const handleResize = () => {
+            const centerX = calculateCenterX();
+            setNodes(nodes => nodes.map(node => ({
+                ...node,
+                position: {
+                    x: centerX,
+                    y: node.position.y
+                }
+            })));
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <div className="min-h-screen bg-background text-text-primary">
             <div className="w-full h-screen">
@@ -451,10 +457,19 @@ function MainFlow() {
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     nodeTypes={nodeTypes}
-                    fitView
-                    minZoom={0.5}
+                    minZoom={0.2}
                     maxZoom={1.5}
-                    fitViewOptions={{ padding: 0.5 }}
+                    defaultViewport={{
+                        x: 0,
+                        y: 0,
+                        zoom: 0.7
+                    }}
+                    fitViewOptions={{
+                        padding: 0.1,
+                        minZoom: 0.7,
+                        maxZoom: 0.7,
+                        duration: 200
+                    }}
                     className="bg-background"
                     proOptions={proOptions}
                 >
@@ -462,6 +477,29 @@ function MainFlow() {
                     <Controls className="bg-surface border border-border rounded-lg" />
                     <Panel position="top-left" className="p-4 flex items-center gap-4">
                         <h1 className="text-2xl font-bold text-text-primary">boost.</h1>
+                        <select
+                            value={nodeTypeFilter}
+                            onChange={(e) => {
+                                setNodeTypeFilter(e.target.value);
+                                // Don't automatically fit view on filter change
+                            }}
+                            className="nav-link px-4 py-2 bg-surface text-text-primary border border-border rounded-md hover:bg-border transition-colors"
+                        >
+                            <option value="all">All Types</option>
+                            {Array.from(customNodeTypes)
+                                .map(type => ({
+                                    value: type === 'goals' ? 'Goal' : type.slice(0, -1).split('_').map(word =>
+                                        word.charAt(0).toUpperCase() + word.slice(1)
+                                    ).join(' '),
+                                    type
+                                }))
+                                .sort((a, b) => a.value.localeCompare(b.value))
+                                .map(({ value, type }) => (
+                                    <option key={type} value={value}>
+                                        {value}
+                                    </option>
+                                ))}
+                        </select>
                         <button
                             onClick={() => {
                                 if (!currentUser) {
